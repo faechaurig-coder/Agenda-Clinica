@@ -1,6 +1,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { AppProvider, useApp } from './context/AppContext.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 import AppShell from './components/AppShell.jsx'
 import Agenda from './modules/Agenda.jsx'
 import Pacientes from './modules/Pacientes.jsx'
@@ -31,8 +32,10 @@ function Router() {
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AppProvider>
-      <Router />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <Router />
+      </AppProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 )

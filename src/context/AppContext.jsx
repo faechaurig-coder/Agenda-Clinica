@@ -31,7 +31,14 @@ export function AppProvider({ children }) {
     Object.entries(tokens).forEach(([k, v]) => root.style.setProperty(k, v))
     try { localStorage.setItem('agora-theme', JSON.stringify(theme)) } catch {}
     const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta) meta.setAttribute('content', theme === 'magic-frames' ? '#0B1020' : theme === 'talenta' ? '#EEF2F7' : '#F4F5F7')
+    if (meta) {
+      const bg = tokenCSS[theme]?.['--bg-app'] || tokenCSS[DEFAULT_THEME]['--bg-app']
+      // Un degradado (magic-frames) no es válido como meta theme-color; usamos un color base.
+      const color = bg.startsWith('linear-gradient') || bg.startsWith('radial-gradient')
+        ? bg.includes('#') ? bg.match(/#[0-9A-Fa-f]{6}/)?.[0] || '#0B1020' : '#0B1020'
+        : bg
+      meta.setAttribute('content', color)
+    }
   }, [theme])
 
   const toast = useCallback((msg, kind = 'ok') => {
