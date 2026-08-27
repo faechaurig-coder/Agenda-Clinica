@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import Icon from '../icons/Icons.jsx'
 import { consultTypeById } from '../data/specialties.js'
@@ -7,6 +7,39 @@ import { statusMeta, apptColor } from './appt.js'
 export default function QuickView({ onEdit }) {
   const { quickView, setQuickView, patientById, openExpediente, setAppointments, toast } = useApp()
   const ref = useRef(null)
+  const [pos, setPos] = useState(null)
+
+  // Posiciona el panel de forma inteligente: siempre cabe dentro del viewport,
+  // se despliega hacia arriba/izquierda según el espacio disponible y se
+  // corrige al hacer scroll/resize (evita que quede cortado o "atascado").
+  useEffect(() => {
+    if (!quickView) return
+    const el = ref.current
+    if (!el) return
+    let raf = 0
+    const place = () => {
+      if (!ref.current) return
+      const { offsetWidth: w, offsetHeight: h } = ref.current
+      const vw = window.innerWidth, vh = window.innerHeight
+      const margin = 10
+      const { x, y } = quickView
+      let left = Math.round(x)
+      let top = Math.round(y)
+      // Espacio a la derecha < ancho → flip hacia la izquierda
+      if (left + w + margin > vw) left = Math.round(vw - w - margin)
+      if (left < margin) left = margin
+      // Espacio abajo < alto → flip hacia arriba
+      if (top + h + margin > vh) top = Math.round(vh - h - margin)
+      if (top < margin) top = margin
+      setPos({ left, top })
+    }
+    raf = requestAnimationFrame(place)
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    // Reclampa tras cargar fuentes/estados (altura real puede cambiar)
+    const t = setTimeout(place, 200)
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); window.removeEventListener('scroll', place, true); window.removeEventListener('resize', place) }
+  }, [quickView])
 
   useEffect(() => {
     if (!quickView) return
@@ -20,7 +53,7 @@ export default function QuickView({ onEdit }) {
   }, [quickView, setQuickView])
 
   if (!quickView) return null
-  const { appt, x, y } = quickView
+  const { appt } = quickView
   const p = patientById(appt.patientId)
   const t = consultTypeById(appt.type)
   const sm = statusMeta(appt.status)
@@ -44,7 +77,7 @@ export default function QuickView({ onEdit }) {
   }
 
   return (
-    <div ref={ref} className="popover-panel" style={{ left: x, top: y, maxWidth: 370 }}>
+    <div ref={ref} className="popover-panel" style={pos || { left: 10, top: 10, maxWidth: 370 }}>
       <div className="row" style={{ marginBottom: 12 }}>
         <div style={{ width: 40, height: 40, }} />
         <div style={{ flex: 1 }}>

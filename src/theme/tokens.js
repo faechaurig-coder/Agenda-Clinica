@@ -23,7 +23,7 @@ export const THEMES = [
   },
 ]
 
-export const DEFAULT_THEME = 'magic-frames'
+export const DEFAULT_THEME = 'talenta'
 
 // ----- Semantic token maps per theme id -----
 export const tokenCSS = {
@@ -96,8 +96,8 @@ export const tokenCSS = {
     '--warn': '#E08813',
     '--danger': '#D64545',
     '--info': '#1F6FEB',
-    '--shadow-card': '0 6px 24px -12px rgba(11,27,54,0.16), 0 0 0 1px rgba(11,27,54,0.03)',
-    '--shadow-pop': '0 24px 70px -24px rgba(11,27,54,0.4)',
+    '--shadow-card': '0 1px 2px rgba(11,27,54,0.05), 0 0 0 1px rgba(11,27,54,0.03)',
+    '--shadow-pop': '0 24px 70px -24px rgba(11,27,54,0.40)',
     '--font-display': "'Source Serif 4', serif",
     '--font-ui': "'Inter', sans-serif",
     '--font-mono': "'Inter', monospace",

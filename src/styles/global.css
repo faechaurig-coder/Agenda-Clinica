@@ -406,13 +406,19 @@ input, textarea, select { font-family: inherit; font-size: 14px; color: var(--te
 /* ===================== QUICK VIEW POPOVER ===================== */
 .popover-panel {
   position: fixed; z-index: 90;
-  min-width: 340px; max-width: 380px;
+  width: 360px; max-width: calc(100vw - 20px);
   background: var(--bg-modal);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-pop);
   padding: 18px;
   animation: popIn var(--motion-fast) var(--ease-out);
+}
+@media (max-width: 560px) {
+  .popover-panel {
+    left: 10px !important; width: calc(100vw - 20px);
+    max-height: calc(100svh - 20px); overflow-y: auto;
+  }
 }
 @keyframes popIn {
   from { opacity: 0; transform: translateY(6px) scale(0.98); }
@@ -563,12 +569,58 @@ input, textarea, select { font-family: inherit; font-size: 14px; color: var(--te
 @media (max-width: 860px) {
   .sidebar { display: none; }
   .tabnav { display: grid; }
-  .page { padding: 18px 16px 96px; }
+  .page { padding: 16px 14px calc(96px + env(safe-area-inset-bottom)); }
   .form-grid3 { grid-template-columns: 1fr 1fr; }
+  body { overflow: auto; }
+  .app { height: 100dvh; }
+}
+/* Tablet: header-actions + pagehead stack cleanly */
+@media (max-width: 640px) {
+  .pagehead { margin-bottom: 16px; }
+  .pagehead h1 { font-size: 24px; }
+  .topbar { padding: 0 12px; gap: 10px; }
+  .topbar-search { max-width: none; height: 38px; }
+  .topbar-search .kbd-hint { display: none; }
+  .theme-switch { display: none; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .tabs { margin-bottom: 16px; }
+  /* Pacientes: convertir tabla en tarjetas apilables */
+  .table { display: block; }
+  .table thead { display: none; }
+  .table tbody { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+  .table tr { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; box-shadow: var(--shadow-card); background: var(--bg-surface); }
+  .table td { display: block; border: none; padding: 2px 0; }
+  .table td[data-mobile-hide] { display: none; }
+  .table tr > td:first-child { grid-column: 1 / -1; }
+  .table tr > td:last-child { display: none; }
+  .table td:not(:first-child)::before { content: attr(data-label); display: block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); font-weight: 700; margin-bottom: 1px; }
 }
 @media (max-width: 560px) {
   .form-grid2, .form-grid3 { grid-template-columns: 1fr; }
-  .tabnav { grid-template-columns: repeat(3, 1fr); }
+  .tabnav { grid-template-columns: repeat(4, 1fr); }
+  /* Filtros deslizables en horizontal para no apretujar */
+  .chip-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .chip-row::-webkit-scrollbar { display: none; }
+  /* Modales se abren a pantalla completa en móvil */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal { max-height: 94dvh; max-width: none; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  .modal-head { border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  .modal-foot { border-radius: 0; }
+  /* Quick view = bottom sheet */
+  .popover-panel {
+    left: 10px !important; width: calc(100vw - 20px) !important;
+    top: auto !important; bottom: env(safe-area-inset-bottom);
+    max-height: calc(92dvh - env(safe-area-inset-bottom));
+    border-radius: var(--radius-xl);
+  }
+  .pagehead { align-items: flex-start; }
+  .header-actions { width: 100%; justify-content: space-between; }
+}
+/* Hide tabs with overflow on phones to reduce clutter */
+@media (max-width: 420px) {
+  .topbar-search .search-input { min-width: 120px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .card { padding: 16px; }
 }
 @media (min-width: 861px) {
   .tabnav { display: none !important; }

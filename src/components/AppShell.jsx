@@ -71,19 +71,19 @@ export default function AppShell({ children }) {
         <header className="topbar">
           <div className="topbar-search">
             <Icon name="search" size={17} />
-            <input placeholder="Buscar pacientes, citas o expedientes…" aria-label="Búsqueda global" />
-            <span style={{ color: 'var(--text-3)', fontSize: 12 }}>⌘K</span>
+            <input className="search-input" placeholder="Buscar pacientes, citas…" aria-label="Búsqueda global" />
+            <span className="kbd-hint" style={{ color: 'var(--text-3)', fontSize: 12 }}>⌘K</span>
           </div>
           <div style={{ flex: 1 }} />
-          <button className="icon-btn"><Icon name="bell" size={19} /><span className="dot" /></button>
-          <div className="seg" aria-label="Cambiar tema visual">
-            <button className={theme === 'magic-frames' ? 'active' : ''} title="Magic Frames" onClick={() => { setTheme('magic-frames'); toast('Tema Magic Frames activado') }}>
+          <button className="icon-btn" aria-label="Notificaciones"><Icon name="bell" size={19} /><span className="dot" /></button>
+          <div className="seg theme-switch" aria-label="Cambiar tema visual">
+            <button className={theme === 'magic-frames' ? 'active' : ''} title="Magic Frames" aria-label="Magic Frames" onClick={() => { setTheme('magic-frames'); toast('Tema Magic Frames activado') }}>
               <Icon name="spark" size={16} />
             </button>
-            <button className={theme === 'talenta' ? 'active' : ''} title="Talenta" onClick={() => { setTheme('talenta'); toast('Tema Talenta activado') }}>
+            <button className={theme === 'talenta' ? 'active' : ''} title="Talenta" aria-label="Talenta" onClick={() => { setTheme('talenta'); toast('Tema Talenta activado') }}>
               <Icon name="grid" size={16} />
             </button>
-            <button className={theme === 'base' ? 'active' : ''} title="Base" onClick={() => { setTheme('base'); toast('Tema Base activado') }}>
+            <button className={theme === 'base' ? 'active' : ''} title="Base" aria-label="Base" onClick={() => { setTheme('base'); toast('Tema Base activado') }}>
               <Icon name="checkCircle" size={16} />
             </button>
           </div>

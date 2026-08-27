@@ -81,7 +81,7 @@ export default function Pacientes() {
                 <tr key={p.id} onClick={() => openExpediente(p.id, 'resumen')}>
                   <td>
                     <div className="row">
-                      <Avatar name={p.name} size={38} />
+                      <Avatar name={p.name} size={42} />
                       <div>
                         <div className="td-strong">{p.name}</div>
                         <div className="muted" style={{ fontSize: 12 }}>
@@ -91,11 +91,11 @@ export default function Pacientes() {
                       </div>
                     </div>
                   </td>
-                  <td>{p.age} años</td>
-                  <td>{p.phone}</td>
-                  <td>{fmtDay(p.lastConsult)}</td>
-                  <td>{p.nextAppointment ? fmtDay(p.nextAppointment) : <span className="muted">—</span>}</td>
-                  <td><Badge tone={p.alerts?.length ? 'danger' : 'ok'}>{p.alerts?.length ? `⚠ ${p.alerts.length}` : 'Activo'}</Badge></td>
+                  <td data-label="Edad">{p.age}</td>
+                  <td data-label="Teléfono">{p.phone}</td>
+                  <td data-label="Última consulta">{fmtDay(p.lastConsult)}</td>
+                  <td data-label="Próxima cita">{p.nextAppointment ? fmtDay(p.nextAppointment) : <span className="muted">—</span>}</td>
+                  <td data-label="Estado"><Badge tone={p.alerts?.length ? 'danger' : 'ok'}>{p.alerts?.length ? `⚠ ${p.alerts.length}` : 'Activo'}</Badge></td>
                   <td className="muted"><Icon name="chevR" size={16} /></td>
                 </tr>
               ))}

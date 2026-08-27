@@ -4,8 +4,8 @@
   "description": "Plataforma universal de atención clínica: agenda, pacientes y expediente.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b1020",
-  "theme_color": "#0b1020",
+  "background_color": "#EEF2F7",
+  "theme_color": "#EEF2F7",
   "lang": "es",
   "icons": [
     { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }

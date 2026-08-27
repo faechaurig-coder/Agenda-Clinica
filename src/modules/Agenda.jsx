@@ -110,11 +110,12 @@ export default function Agenda() {
 /* ===================== WEEK ===================== */
 function WeekGrid({ days, byDay, patientById, onOpen, todayIso }) {
   return (
-    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+    <div className="card week-card" style={{ padding: 0, overflow: 'auto' }}>
       <div className="week-grid" style={{
         display: 'grid',
         gridTemplateColumns: '64px repeat(7, 1fr)',
-        maxHeight: 'calc(100vh - 220px)', overflowY: 'auto',
+        maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', overflowX: 'auto',
+        minWidth: 720,
       }}>
         {/* header */}
         <div />
@@ -178,9 +179,9 @@ function ApptBlock({ a, patient, onOpen }) {
       onClick={onOpen}
       style={{
         position: 'absolute', left: 3, right: 3, top: 3,
-        borderRadius: 10, padding: '6px 8px', textAlign: 'left', cursor: 'pointer',
-        background: `linear-gradient(135deg, ${c}30, ${c}18)`,
-        border: `1px solid ${c}66`,
+        borderRadius: 10, padding: '5px 8px', textAlign: 'left', cursor: 'pointer',
+        background: `color-mix(in srgb, ${c} 10%, var(--bg-surface))`,
+        border: `1px solid ${c}40`,
         borderLeft: `3px solid ${c}`,
         color: 'var(--text-1)',
         minHeight: 44,
