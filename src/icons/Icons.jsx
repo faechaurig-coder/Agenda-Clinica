@@ -56,7 +56,7 @@ const P = {
   userPlus: 'M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1m10-12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm11 8h-6m3-3v6',
 }
 
-export default function Icon({ name, size = 20, stroke = 1.7, className = '', style }) {
+export default function Icon({ name, size = 20, stroke = 1.7, className = '', style, ...rest }) {
   return (
     <svg
       width={size}
@@ -70,6 +70,7 @@ export default function Icon({ name, size = 20, stroke = 1.7, className = '', st
       className={className}
       style={style}
       aria-hidden="true"
+      {...rest}
     >
       <path d={P[name] || P.alert} />
     </svg>
