@@ -10,6 +10,11 @@ export function AppProvider({ children }) {
     try { return JSON.parse(localStorage.getItem('agora-theme')) || DEFAULT_THEME } catch { return DEFAULT_THEME }
   })
   const [specialty, setSpecialty] = useState('medicina')
+  const [doctor, setDoctor] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('agora-doctor')) || { name: 'Dra. Elena Ruiz', title: 'Especialista en Odontología' }
+    } catch { return { name: 'Dra. Elena Ruiz', title: 'Especialista en Odontología' } }
+  })
   const [patients, setPatients] = useState(PATIENTS)
   const [appointments, setAppointments] = useState(APPOINTMENTS)
   const [professionals] = useState(PROFESSIONALS)
@@ -29,7 +34,6 @@ export function AppProvider({ children }) {
     root.setAttribute('data-theme', theme)
     const tokens = tokenCSS[theme] || tokenCSS[DEFAULT_THEME]
     Object.entries(tokens).forEach(([k, v]) => root.style.setProperty(k, v))
-    try { localStorage.setItem('agora-theme', JSON.stringify(theme)) } catch {}
     const meta = document.querySelector('meta[name="theme-color"]')
     if (meta) {
       const bg = tokenCSS[theme]?.['--bg-app'] || tokenCSS[DEFAULT_THEME]['--bg-app']
@@ -39,7 +43,12 @@ export function AppProvider({ children }) {
         : bg
       meta.setAttribute('content', color)
     }
+    try { localStorage.setItem('agora-theme', JSON.stringify(theme)) } catch {}
   }, [theme])
+
+  useEffect(() => {
+    try { localStorage.setItem('agora-doctor', JSON.stringify(doctor)) } catch {}
+  }, [doctor])
 
   const toast = useCallback((msg, kind = 'ok') => {
     const id = Date.now() + Math.random()
@@ -59,7 +68,7 @@ export function AppProvider({ children }) {
   return (
     <AppCtx.Provider value={{
       view, setView,
-      theme, setTheme, specialty, setSpecialty,
+      theme, setTheme, specialty, setSpecialty, doctor, setDoctor,
       patients, setPatients, patientById,
       appointments, setAppointments,
       professionals, rooms,

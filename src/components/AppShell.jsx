@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import Icon from '../icons/Icons.jsx'
-import { Badge, Modal, Field } from './ui.jsx'
+import { Modal, Field } from './ui.jsx'
 import { THEMES } from '../theme/tokens.js'
 
 const NAV = [
@@ -11,20 +11,51 @@ const NAV = [
 ]
 
 export default function AppShell({ children }) {
-  const { view, setView, toast } = useApp()
+  const { view, setView, toast, doctor, appointments, patients, patientById, openExpediente } = useApp()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsTab, setSettingsTab] = useState('general')
+  const [notifOpen, setNotifOpen] = useState(false)
 
   const openSettings = (tab = 'general') => { setSettingsTab(tab); setSettingsOpen(true) }
+
+  const today = new Date()
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
+  const notifications = (() => {
+    const list = []
+    // Clínicas: pacientes con una alerta registrada (importante, siempre visibles)
+    patients.filter((p) => (p.alerts || []).length > 0).forEach((p) => {
+      (p.alerts || []).forEach((a) => {
+        list.push({ id: `al-${p.id}-${a}`, kind: 'danger', text: `${p.name}: ${a}`, patientId: p.id })
+      })
+    })
+    // Agenda hoy: relevantes
+    appointments
+      .filter((a) => a.date === todayKey && (a.status === 'En consulta' || a.status === 'Llegó' || a.status === 'Confirmada'))
+      .slice(0, 4)
+      .forEach((a) => {
+        const pn = patientById(a.patientId)?.name || 'Paciente'
+        list.push({ id: `ap-${a.id}`, kind: a.status === 'En consulta' ? 'primary' : 'info', text: `${pn} · ${a.time} — ${a.status}`, patientId: a.patientId, time: a.time })
+      })
+    // Seguimiento: pacientes con alerta o sin próxima cita
+    const nextByPatient = {}
+    appointments.forEach((a) => { if (a.date >= todayKey && (!nextByPatient[a.patientId] || a.date < nextByPatient[a.patientId].date)) nextByPatient[a.patientId] = a })
+    patients.forEach((p) => {
+      if (!nextByPatient[p.id]) list.push({ id: `fol-${p.id}`, kind: 'warn', text: `${p.name} necesita programar su próxima cita`, patientId: p.id })
+    })
+    return list
+  })()
 
   return (
     <div className="app">
       <aside className="sidebar" aria-label="Navegación principal">
         <div className="brand">
           <div className="brand-mark"><Icon name="plus" size={20} stroke={2.4} /></div>
-          <div>
-            <div className="brand-name">Ágora Clínica</div>
-            <div className="brand-sub">Plataforma de atención</div>
+          <div style={{ minWidth: 0 }}>
+            <div className="brand-name" style={{ fontSize: 17, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {doctor.name}
+            </div>
+            <div className="brand-sub">{doctor.title}</div>
           </div>
         </div>
 
@@ -54,17 +85,11 @@ export default function AppShell({ children }) {
 
         <div style={{ flex: 1 }} />
 
-        <div className="card" style={{ padding: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <Avatar name="Elena Ruiz" size={36} />
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 13.5 }}>Dra. Elena Ruiz</div>
-              <div style={{ fontSize: 12, color: 'var(--text-3)' }}>Odontóloga · Consultorio 2</div>
-            </div>
-          </div>
-          <div className="row">
-            <Badge tone="accent">● En línea</Badge>
-            <button className="icon-btn" style={{ marginLeft: 'auto' }}><Icon name="logout" size={16} /></button>
+        <div className="sidebar-prof">
+          <Avatar name={doctor.name} size={38} />
+          <div style={{ minWidth: 0 }}>
+            <div className="sidebar-prof-name">{doctor.name}</div>
+            <div className="sidebar-prof-title">{doctor.title}</div>
           </div>
         </div>
       </aside>
@@ -77,10 +102,17 @@ export default function AppShell({ children }) {
             <span className="kbd-hint" style={{ color: 'var(--text-3)', fontSize: 12 }}>⌘K</span>
           </div>
           <div style={{ flex: 1 }} />
-          <button className="icon-btn" aria-label="Notificaciones"><Icon name="bell" size={19} /><span className="dot" /></button>
-          <button className="icon-btn" aria-label="Cambiar tema visual" title="Cambiar tema" onClick={() => openSettings('apariencia')}>
-            <Icon name="spark" size={19} />
+          <button
+            className={`icon-btn ${notifOpen ? 'active' : ''}`}
+            aria-label="Notificaciones"
+            aria-haspopup="true"
+            aria-expanded={notifOpen}
+            onClick={() => setNotifOpen((o) => !o)}
+          >
+            <Icon name="bell" size={19} />
+            {notifications.length > 0 && <span className="dot">{notifications.length <= 9 ? notifications.length : '9+'}</span>}
           </button>
+          <NotificationPanel open={notifOpen} onClose={() => setNotifOpen(false)} items={notifications} onOpenPatient={openExpediente} doctorName={doctor.name} />
         </header>
 
         <div className="app-content">{children}</div>
@@ -101,6 +133,47 @@ export default function AppShell({ children }) {
       </div>
 
       {settingsOpen && <SettingsModal tab={settingsTab} onClose={() => setSettingsOpen(false)} />}
+    </div>
+  )
+}
+
+function NotificationPanel({ open, onClose, items, onOpenPatient, doctorName }) {
+  const ref = React.useRef(null)
+  React.useEffect(() => {
+    if (!open) return
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose() }
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey) }
+  }, [open, onClose])
+  if (!open) return null
+  const kinds = {
+    danger: 'var(--danger)', primary: 'var(--accent)', info: 'var(--info, var(--text-3))', warn: 'var(--warn)',
+  }
+  return (
+    <div ref={ref} className="notif-panel" role="dialog" aria-label="Notificaciones y alertas">
+      <div className="notif-head">
+        <div style={{ fontWeight: 700, fontSize: 14 }}>Alertas · {doctorName}</div>
+        <button className="icon-btn notif-close" aria-label="Cerrar notificaciones" onClick={onClose}>
+          <Icon name="x" size={16} />
+        </button>
+      </div>
+      <div className="notif-body">
+        {items.length === 0 && <div className="muted" style={{ padding: 18, textAlign: 'center' }}>Sin nuevas alertas.</div>}
+        {items.map((it) => (
+          <button key={it.id} className="notif-item" onClick={() => { onOpenPatient(it.patientId, 'resumen'); onClose() }}>
+            <span className="notif-badge" style={{ background: kinds[it.kind] || 'var(--text-3)', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <div className="notif-txt">{it.text}</div>
+              <div className="notif-meta">{it.kind === 'danger' ? 'Alerta clínica' : it.time ? `Cita ${it.time}` : 'Seguimiento'}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+      <div className="notif-foot">
+        <button className="btn btn-ghost btn-sm" style={{ width: '100%' }} onClick={onClose}>Cerrar</button>
+      </div>
     </div>
   )
 }
@@ -144,7 +217,7 @@ const TemplateField = ({ value, onChange }) => {
 }
 
 export function SettingsModal({ onClose, tab = 'general' }) {
-  const { theme, setTheme, specialty, setSpecialty, toast } = useApp()
+  const { theme, setTheme, specialty, setSpecialty, doctor, setDoctor, toast } = useApp()
   const [active, setActive] = useState(tab)
   const [activeTemplate, setActiveTemplate] = useState('consulta')
   const [fields, setFields] = useState([
@@ -174,14 +247,27 @@ export function SettingsModal({ onClose, tab = 'general' }) {
 
       {active === 'general' && (
         <>
-          <Field label="Especialidad principal">
+          <div className="ui-label" style={{ marginBottom: 10 }}>Perfil profesional</div>
+          <div className="card" style={{ marginBottom: 16 }}>
+            <Field label="Nombre del profesional">
+              <input className="input" value={doctor.name} onChange={(e) => setDoctor({ ...doctor, name: e.target.value })} placeholder="Dra. Elena Ruiz" />
+            </Field>
+            <Field label="Especialidad / título">
+              <input className="input" value={doctor.title} onChange={(e) => setDoctor({ ...doctor, title: e.target.value })} placeholder="Especialista en Odontología" />
+            </Field>
+            <div className="muted" style={{ fontSize: 12.5 }}>
+              Así te identifica la plataforma en la navegación y en tus alertas.
+            </div>
+          </div>
+
+          <Field label="Especialidad clínica">
             <div className="select-wrap">
               <select className="select" value={specialty} onChange={(e) => setSpecialty(e.target.value)}>
                 {SPECIALTIES.map((s) => <option key={s} value={s}>{cap(s)}</option>)}
               </select>
             </div>
             <div className="muted" style={{ fontSize: 12.5 }}>
-              El expediente se adapta a tu especialidad. El núcleo (agenda, pacientes, resumen) es universal.
+              Configura el módulo de expediente (odontología, psicología, nutrición…). El núcleo (agenda, pacientes, resumen) es universal.
             </div>
           </Field>
 
