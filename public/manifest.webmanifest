@@ -1,0 +1,13 @@
+{
+  "name": "Ágora Clínica — Plataforma de Atención",
+  "short_name": "Ágora",
+  "description": "Plataforma universal de atención clínica: agenda, pacientes y expediente.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EEF2F7",
+  "theme_color": "#EEF2F7",
+  "lang": "es",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
